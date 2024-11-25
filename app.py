@@ -27,9 +27,19 @@ yellow_data['type'] = 'yellow'
 green_data['type'] = 'green'
 vtc_data['type'] = 'vtc'
 
-all_data = pd.concat([yellow_data[['pickup_lat', 'pickup_lon', 'dropoff_lat', 'dropoff_lon', 'pickup_time', 'dropoff_time', 'type']],
-                      green_data[['pickup_lat', 'pickup_lon', 'dropoff_lat', 'dropoff_lon', 'pickup_time', 'dropoff_time', 'type']],
-                      vtc_data[['pickup_lat', 'pickup_lon', 'pickup_time', 'type']]])
+vtc_data['passenger_count'] = 0  # Ajoute une colonne avec une valeur par défaut
+
+green_data.rename(columns={'Passenger_count': 'passenger_count'}, inplace=True)
+green_data.rename(columns={'Payment_type': 'payment_type'}, inplace=True)
+green_data.rename(columns={'Tip_amount': 'tip_amount'}, inplace=True)
+
+# Fusionner les datasets
+all_data = pd.concat([
+    yellow_data[['pickup_lat', 'pickup_lon', 'dropoff_lat', 'dropoff_lon', 'pickup_time', 'dropoff_time', 'type', 'passenger_count', 'distance', 'total_fare', 'payment_type', 'tip_amount']],
+    green_data[['pickup_lat', 'pickup_lon', 'dropoff_lat', 'dropoff_lon', 'pickup_time', 'dropoff_time', 'type', 'passenger_count', 'distance', 'total_fare', 'payment_type', 'tip_amount']],
+    vtc_data[['pickup_lat', 'pickup_lon', 'pickup_time', 'type', 'passenger_count']]
+], ignore_index=True)
+
 
 # Filtrer les données par date et type de véhicule
 st.title("Analyse des Pickups et Drop-offs à New York")
@@ -132,13 +142,65 @@ deck = pdk.Deck(
 # Afficher la carte dans Streamlit
 st.pydeck_chart(deck)
 
+# Filtrer les données pour exclure VTC dans les statistiques
+stats_data = all_data[all_data['type'] != 'vtc']
+
+# Calcul des nouvelles statistiques
+# 1. Revenus totaux par type de véhicule
+revenus_par_type = stats_data.groupby('type')['total_fare'].sum()
+
+# 2. Pourcentage des paiements par type
+pourcentage_paiement_par_type = stats_data.groupby('payment_type').size() / stats_data.shape[0] * 100
+
+# 3. Nombre moyen de passagers par course
+nombre_moyen_passagers = stats_data.groupby('type')['passenger_count'].mean()
+
+# 4. Distance moyenne par course
+distance_moyenne = stats_data.groupby('type')['distance'].mean()
+
+# 5. Pourcentage de paiements avec pourboire
+paiement_avec_pourboire = (stats_data['tip_amount'] > 0).mean() * 100
+
+# 6. Temps moyen des trajets en minutes
+# Conversion des timestamps en minutes
+stats_data['pickup_time'] = pd.to_datetime(stats_data['pickup_time'], unit='ms')
+stats_data['dropoff_time'] = pd.to_datetime(stats_data['dropoff_time'], unit='ms')
+stats_data['temps_trajet'] = (stats_data['dropoff_time'] - stats_data['pickup_time']).dt.total_seconds() / 60
+temps_moyen_trajet = stats_data.groupby('type')['temps_trajet'].mean()
 
 
-# Statistiques supplémentaires
+# Afficher les statistiques
 st.header("Statistiques")
 if st.checkbox("Afficher les statistiques détaillées"):
-    st.write("### Nombre de passagers par type de véhicule")
-    st.bar_chart(filtered_data.groupby('type')['passenger_count'].sum())
-    
-    st.write("### Distance totale parcourue par type de véhicule")
-    st.bar_chart(filtered_data.groupby('type')['trip_distance'].sum())
+    st.write("### Nombre de passagers par type de véhicule (hors VTC)")
+    st.bar_chart(stats_data.groupby('type')['passenger_count'].sum())
+
+    st.write("### Distance totale parcourue par type de véhicule (hors VTC)")
+    if 'distance' in stats_data.columns:
+        st.bar_chart(stats_data.groupby('type')['distance'].sum())
+    else:
+        st.write("La colonne 'trip_distance' n'existe pas dans les données filtrées.")
+
+    # 1. Revenus totaux par type de véhicule
+    st.write("### Revenus totaux par type de véhicule")
+    st.bar_chart(revenus_par_type)
+
+    # 2. Pourcentage des paiements par type
+    st.write("### Pourcentage des paiements par type")
+    st.bar_chart(pourcentage_paiement_par_type)
+
+    # 3. Nombre moyen de passagers par course
+    st.write("### Nombre moyen de passagers par course")
+    st.bar_chart(nombre_moyen_passagers)
+
+    # 4. Distance moyenne par course
+    st.write("### Distance moyenne par course")
+    st.bar_chart(distance_moyenne)
+
+    # 5. Pourcentage de paiements avec pourboire
+    st.write("### Pourcentage de paiements avec pourboire")
+    st.write(f"{paiement_avec_pourboire:.2f}% des paiements incluent un pourboire")
+
+    # 6. Temps moyen des trajets en minutes
+    st.write("### Temps moyen des trajets (en minutes)")
+    st.bar_chart(temps_moyen_trajet)

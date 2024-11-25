@@ -2,11 +2,17 @@
 
 Ce projet vise à analyser et visualiser les données de transport à New York, couvrant les taxis jaunes, verts, et les services de VTC. L'application Streamlit permet d'explorer les données via des cartes interactives et des graphiques.
 
+![1732566457076](image/README/1732566457076.png)
+
 ## Fonctionnalités
 
 - Visualisation interactive des pick-ups et drop-offs sur une carte avec Kepler.gl.
 - Filtres par type de service (Yellow, Green, VTC) et par date.
 - Statistiques sur les trajets (distances parcourues, etc.).
+
+## Regardez ma démo vidéo
+
+[![Vidéo Démo](https://img.shields.io/badge/View%20Demo-blue)](assets/demo_app.mov)
 
 ## Prérequis
 
