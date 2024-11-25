@@ -13,3 +13,5 @@ __pycache__/
 
 # Exclure les notebooks spécifiques
 data_prep.ipynb
+
+assets/demo_app.mov
