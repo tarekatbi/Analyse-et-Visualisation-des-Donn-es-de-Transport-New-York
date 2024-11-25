@@ -1,0 +1,15 @@
+# Exclure les environnements virtuels
+env/
+.venv/
+
+# Exclure les fichiers de configuration spécifiques à l'OS ou à l'éditeur
+.DS_Store
+Thumbs.db
+*.log
+
+# Exclure les fichiers de cache Python
+__pycache__/
+*.py[cod]
+
+# Exclure les notebooks spécifiques
+data_prep.ipynb
