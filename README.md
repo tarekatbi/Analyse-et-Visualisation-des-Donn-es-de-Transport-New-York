@@ -12,7 +12,7 @@ Ce projet vise à analyser et visualiser les données de transport à New York, 
 
 ## Regardez ma démo vidéo
 
-[![Vidéo Démo](https://img.shields.io/badge/View%20Demo-blue)](assets/demo_app.mov)
+[![Vidéo Démo](https://img.shields.io/badge/View%20Demo-blue)](assets/demo.mp4)
 
 ## Prérequis
 
